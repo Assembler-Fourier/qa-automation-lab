@@ -1,0 +1,25 @@
+{
+  "name": "qa-automation-lab",
+  "version": "0.1.0",
+  "description": "Playwright API testing proof repo for SecureTaskOps and portfolio backend workflows.",
+  "type": "module",
+  "private": false,
+  "scripts": {
+    "test": "playwright test",
+    "test:api": "playwright test tests/securetaskops-api.spec.mjs",
+    "report": "playwright show-report"
+  },
+  "keywords": [
+    "playwright",
+    "api-testing",
+    "qa-automation",
+    "github-actions",
+    "securetaskops"
+  ],
+  "author": "Uzair Waseem",
+  "license": "MIT",
+  "devDependencies": {
+    "@playwright/test": "^1.56.1",
+    "wait-on": "^9.0.10"
+  }
+}

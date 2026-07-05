@@ -1,0 +1,50 @@
+name: QA Automation Lab
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  api-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout QA repo
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install QA dependencies
+        run: npm install
+
+      - name: Checkout SecureTaskOps target app
+        uses: actions/checkout@v4
+        with:
+          repository: Assembler-Fourier/securetaskops-workflow-platform
+          path: target-app
+
+      - name: Install target app dependencies
+        working-directory: target-app
+        run: npm install
+
+      - name: Start target app
+        working-directory: target-app
+        run: |
+          npm start &
+          npx wait-on http://127.0.0.1:3000/health
+
+      - name: Run Playwright API tests
+        env:
+          QA_BASE_URL: http://127.0.0.1:3000
+        run: npm run test:api
+
+      - name: Upload Playwright report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report
+          path: playwright-report/

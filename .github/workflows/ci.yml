@@ -9,6 +9,7 @@ on:
 jobs:
   api-tests:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - name: Checkout QA repo
         uses: actions/checkout@v4
@@ -33,9 +34,18 @@ jobs:
 
       - name: Start target app
         working-directory: target-app
+        timeout-minutes: 1
         run: |
-          npm start &
-          npx wait-on http://127.0.0.1:3000/health
+          npm start > ../target-app.log 2>&1 &
+          echo $! > ../target-app.pid
+
+      - name: Wait for target app
+        timeout-minutes: 1
+        run: npx wait-on --timeout 30000 http-get://127.0.0.1:3000/health
+
+      - name: Show target app logs on failure
+        if: failure()
+        run: cat target-app.log || true
 
       - name: Run Playwright API tests
         env:

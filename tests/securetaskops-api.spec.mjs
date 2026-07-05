@@ -1,6 +1,15 @@
 import { expect, test } from "@playwright/test";
 
 test.describe("SecureTaskOps API smoke and regression checks", () => {
+  test("dashboard page returns release readiness UI", async ({ request }) => {
+    const response = await request.get("/");
+    expect(response.ok()).toBeTruthy();
+
+    const html = await response.text();
+    expect(html).toContain("SecureTaskOps");
+    expect(html).toContain("Release Signal");
+  });
+
   test("health endpoint returns service status", async ({ request }) => {
     const response = await request.get("/health");
     expect(response.ok()).toBeTruthy();

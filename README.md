@@ -1,12 +1,15 @@
 # QA Automation Lab
 
-Playwright API testing proof repo for SecureTaskOps. This repository shows practical QA automation around API smoke checks, validation, filtering, release-readiness signals, and CI reporting.
+Playwright API and dashboard smoke testing proof repo for SecureTaskOps. This repository shows practical QA automation around API smoke checks, validation, filtering, release-readiness signals, deployed dashboard availability, and CI reporting.
 
-> Honest status: this currently tests the existing SecureTaskOps API surface. Authentication, CRUD UI flows, role restrictions, and browser E2E tests will be added after SecureTaskOps grows those features.
+Live target: https://securetaskops-workflow-platform.vercel.app/
+
+> Honest status: this currently tests the existing SecureTaskOps API and dashboard surface. Authentication, CRUD UI flows, role restrictions, and browser E2E tests will be added after SecureTaskOps grows those features.
 
 ## What Is Tested
 
 - Service health check.
+- Dashboard HTML smoke check.
 - Seeded task API response shape.
 - Task filtering by severity.
 - Release-readiness summary signal.
@@ -49,11 +52,15 @@ QA_BASE_URL=http://127.0.0.1:3000 npm run test:api
 
 ## CI
 
-The GitHub Actions workflow checks out this repo, checks out SecureTaskOps as the target app, starts the target API, runs the Playwright API suite, and uploads the HTML report.
+The GitHub Actions workflow runs two proof paths:
+
+- Local target: checks out SecureTaskOps, starts it locally, runs the Playwright API/dashboard suite, and uploads the HTML report.
+- Live target: runs the same suite against the deployed SecureTaskOps app and uploads a separate HTML report.
 
 ## Current Coverage
 
 - API smoke checks.
+- Dashboard availability checks.
 - API response shape checks.
 - Validation behavior.
 - Release readiness behavior.

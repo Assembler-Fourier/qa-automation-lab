@@ -1,7 +1,7 @@
 {
   "name": "qa-automation-lab",
   "version": "0.1.0",
-  "description": "Playwright API testing proof repo for SecureTaskOps and portfolio backend workflows.",
+  "description": "Playwright API and dashboard smoke tests for the live SecureTaskOps workflow platform.",
   "type": "module",
   "private": false,
   "scripts": {

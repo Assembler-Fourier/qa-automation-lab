@@ -1,12 +1,13 @@
 {
   "name": "qa-automation-lab",
   "version": "0.1.0",
-  "description": "Playwright API and dashboard smoke tests for the live SecureTaskOps workflow platform.",
+  "description": "Playwright API, deployment, SEO, release-boundary, and live-product verification across Uzair Waseem's engineering portfolio.",
   "type": "module",
   "private": false,
   "scripts": {
     "test": "playwright test",
-    "test:api": "playwright test tests/securetaskops-api.spec.mjs",
+    "test:securetaskops": "playwright test tests/securetaskops-api.spec.mjs",
+    "test:portfolio": "playwright test tests/portfolio-products.spec.mjs",
     "report": "playwright show-report"
   },
   "keywords": [
@@ -14,7 +15,9 @@
     "api-testing",
     "qa-automation",
     "github-actions",
-    "securetaskops"
+    "deployment-testing",
+    "seo-testing",
+    "release-verification"
   ],
   "author": "Uzair Waseem",
   "license": "MIT",

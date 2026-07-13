@@ -1,93 +1,61 @@
 # QA Automation Lab
 
-Playwright API and dashboard smoke testing proof repo for SecureTaskOps. This repository shows practical QA automation around API smoke checks, validation, filtering, release-readiness signals, deployed dashboard availability, and CI reporting.
+[![QA Automation Lab](https://github.com/Assembler-Fourier/qa-automation-lab/actions/workflows/ci.yml/badge.svg)](https://github.com/Assembler-Fourier/qa-automation-lab/actions/workflows/ci.yml)
 
-Live target: https://securetaskops-workflow-platform.vercel.app/
-
-> Honest status: this currently tests the existing SecureTaskOps API and dashboard surface. Authentication, CRUD UI flows, role restrictions, and browser E2E tests will be added after SecureTaskOps grows those features.
-
-## What Is Tested
-
-- Service health check.
-- Dashboard HTML smoke check.
-- Seeded task API response shape.
-- Task filtering by severity.
-- Release-readiness summary signal.
-- Validation error handling.
-- Valid task creation path.
-
-## Tech Stack
-
-- Playwright test runner.
-- Playwright APIRequestContext.
-- JavaScript modules.
-- GitHub Actions.
-- HTML test report artifacts.
-
-## Local Setup
-
-Start SecureTaskOps locally first:
-
-```bash
-git clone https://github.com/Assembler-Fourier/securetaskops-workflow-platform.git
-cd securetaskops-workflow-platform
-npm install
-npm start
-```
-
-Then run this repo:
-
-```bash
-git clone https://github.com/Assembler-Fourier/qa-automation-lab.git
-cd qa-automation-lab
-npm install
-npm run test:api
-```
-
-To point tests at a different target:
-
-```bash
-QA_BASE_URL=http://127.0.0.1:3000 npm run test:api
-```
-
-## CI
-
-The GitHub Actions workflow runs two proof paths:
-
-- Local target: checks out SecureTaskOps, starts it locally, runs the Playwright API/dashboard suite, and uploads the HTML report.
-- Live target: runs the same suite against the deployed SecureTaskOps app and uploads a separate HTML report.
-
-## Current Coverage
-
-- API smoke checks.
-- Dashboard availability checks.
-- API response shape checks.
-- Validation behavior.
-- Release readiness behavior.
-- Filtering behavior.
-
-## Planned Coverage
-
-- Authentication flow.
-- Invalid login.
-- Project CRUD.
-- Task CRUD.
-- Role-based restrictions.
-- API validation across all protected endpoints.
-- Browser smoke tests.
-- Accessibility smoke checks.
-- Dashboard load checks.
-
-## Known Limitations
-
-- SecureTaskOps does not yet have authentication, role-based access, PostgreSQL persistence, or a frontend dashboard.
-- This repo is intentionally scoped to the current API until those features exist.
-- No fake coverage percentage is claimed.
+Playwright-based verification for a small portfolio of deployed products. The suite treats public pages, APIs, search metadata, downloadable artifacts, and release boundaries as contracts that should fail loudly when they drift.
 
 ## What This Demonstrates
 
-- QA automation strategy.
-- Playwright API testing.
-- CI test execution.
-- Validation and regression checks.
-- Honest roadmap linking tests to real app capability.
+- API smoke and regression testing with Playwright `APIRequestContext`.
+- Local-target testing against a checked-out service in GitHub Actions.
+- Live deployment checks without depending on private credentials.
+- SEO, sitemap, robots, JSON-LD, PDF, and case-study contract testing.
+- Honest boundary checks for authenticated, early-access, and pre-launch products.
+- HTML reports uploaded for every CI path, including failures.
+
+## Test Matrix
+
+| Target | Contract under test | Current coverage |
+| --- | --- | --- |
+| [Engineering portfolio](https://uzairwaseem.com) | Recruiter message, product proof, JSON-LD, robots, sitemap, CV, case studies | 5 release-contract checks |
+| [Roster Command](https://employee-roster-command.vercel.app/?demo=1) | Protected login and server-session boundary | Public boundary smoke check |
+| [HouseFair](https://housemates-sand.vercel.app) | Public product and early-access availability | Deployment smoke check |
+| [Irish Theory Test Coach](https://irish-theory-test-coach-assembler-fourier-job-work.vercel.app) | Independent-product disclaimer and release availability | Deployment and legal-boundary smoke check |
+| [SecureTaskOps](https://securetaskops-workflow-platform.vercel.app) | Health, seeded workflow data, filtering, validation, risk scoring, creation | 7 API and dashboard checks |
+
+## CI Design
+
+The workflow runs three independent jobs:
+
+1. **Local SecureTaskOps target** checks out the application, starts it, waits for health, and executes the API suite.
+2. **Live SecureTaskOps smoke** runs the same checks against the deployed service.
+3. **Portfolio and product contracts** verifies the portfolio, CV, search routes, case studies, and public release boundaries across the flagship products.
+
+Separating the jobs keeps a third-party deployment failure from hiding a local service regression and makes the report artifact useful during triage.
+
+## Run Locally
+
+```bash
+npm ci
+npm run test:portfolio
+```
+
+To run SecureTaskOps checks against its deployed environment:
+
+```bash
+QA_BASE_URL=https://securetaskops-workflow-platform.vercel.app npm run test:securetaskops
+```
+
+Every product URL can be replaced without editing the suite:
+
+```bash
+PORTFOLIO_URL=http://localhost:3000 npm run test:portfolio
+```
+
+Supported variables: `PORTFOLIO_URL`, `ROSTER_URL`, `HOUSEFAIR_URL`, `THEORY_URL`, and `QA_BASE_URL`.
+
+## Current Limits
+
+- Public-product checks intentionally avoid private accounts and operational data.
+- Browser interaction suites remain inside the owning product repositories, where fixtures and environment setup can be controlled safely.
+- These tests verify release contracts and critical smoke paths; they are not a substitute for exploratory testing, accessibility review, performance testing, or product-specific unit coverage.

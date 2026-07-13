@@ -21,7 +21,7 @@ jobs:
           node-version: 22
 
       - name: Install QA dependencies
-        run: npm install
+        run: npm ci
 
       - name: Checkout SecureTaskOps target app
         uses: actions/checkout@v4
@@ -51,7 +51,7 @@ jobs:
       - name: Run Playwright API tests
         env:
           QA_BASE_URL: http://127.0.0.1:3000
-        run: npm run test:api
+        run: npm run test:securetaskops
 
       - name: Upload Playwright report
         uses: actions/upload-artifact@v4
@@ -74,16 +74,43 @@ jobs:
           node-version: 22
 
       - name: Install QA dependencies
-        run: npm install
+        run: npm ci
 
       - name: Run tests against live SecureTaskOps
         env:
           QA_BASE_URL: https://securetaskops-workflow-platform.vercel.app
-        run: npm run test:api
+        run: npm run test:securetaskops
 
       - name: Upload live Playwright report
         uses: actions/upload-artifact@v4
         if: always()
         with:
           name: playwright-report-live-target
+          path: playwright-report/
+
+  portfolio-product-contracts:
+    name: Portfolio and live-product contracts
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Checkout QA repo
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install QA dependencies
+        run: npm ci
+
+      - name: Verify portfolio, SEO, CV, case studies, and product boundaries
+        run: npm run test:portfolio
+
+      - name: Upload contract-test report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report-product-contracts
           path: playwright-report/

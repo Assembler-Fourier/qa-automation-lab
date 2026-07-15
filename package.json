@@ -1,13 +1,20 @@
 {
   "name": "qa-automation-lab",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Playwright API, deployment, SEO, release-boundary, and live-product verification across Uzair Waseem's engineering portfolio.",
   "type": "module",
   "private": false,
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
-    "test": "playwright test",
-    "test:securetaskops": "playwright test tests/securetaskops-api.spec.mjs",
-    "test:portfolio": "playwright test tests/portfolio-products.spec.mjs",
+    "check": "playwright test --list",
+    "test": "npm run test:portfolio",
+    "test:all": "playwright test",
+    "test:securetaskops": "playwright test tests/securetaskops-api.spec.mjs tests/securetaskops-ui.spec.mjs",
+    "test:securetaskops:read": "playwright test tests/securetaskops-api.spec.mjs",
+    "test:portfolio": "playwright test tests/portfolio-products.spec.mjs tests/live-products.spec.mjs tests/portfolio-ui.spec.mjs",
+    "audit": "npm audit --audit-level=high",
     "report": "playwright show-report"
   },
   "keywords": [
@@ -22,6 +29,7 @@
   "author": "Uzair Waseem",
   "license": "MIT",
   "devDependencies": {
+    "@axe-core/playwright": "^4.12.1",
     "@playwright/test": "^1.56.1",
     "wait-on": "^9.0.10"
   }

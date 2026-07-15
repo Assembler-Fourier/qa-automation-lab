@@ -5,99 +5,26 @@ on:
     branches: ["main"]
   pull_request:
     branches: ["main"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: qa-lab-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  api-tests:
-    name: Local target API and dashboard tests
+  local-target:
+    name: Local API and deterministic UI regression
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 12
     steps:
-      - name: Checkout QA repo
-        uses: actions/checkout@v4
+      - name: Checkout QA repository
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-
-      - name: Install QA dependencies
-        run: npm ci
-
-      - name: Checkout SecureTaskOps target app
-        uses: actions/checkout@v4
-        with:
-          repository: Assembler-Fourier/securetaskops-workflow-platform
-          path: target-app
-
-      - name: Install target app dependencies
-        working-directory: target-app
-        run: npm install
-
-      - name: Start target app
-        working-directory: target-app
-        timeout-minutes: 1
-        run: |
-          npm start > ../target-app.log 2>&1 &
-          echo $! > ../target-app.pid
-
-      - name: Wait for target app
-        timeout-minutes: 1
-        run: npx wait-on --timeout 30000 http-get://127.0.0.1:3000/health
-
-      - name: Show target app logs on failure
-        if: failure()
-        run: cat target-app.log || true
-
-      - name: Run Playwright API tests
-        env:
-          QA_BASE_URL: http://127.0.0.1:3000
-        run: npm run test:securetaskops
-
-      - name: Upload Playwright report
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: playwright-report-local-target
-          path: playwright-report/
-
-  live-api-smoke:
-    name: Live SecureTaskOps smoke tests
-    runs-on: ubuntu-latest
-    timeout-minutes: 8
-    steps:
-      - name: Checkout QA repo
-        uses: actions/checkout@v4
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-
-      - name: Install QA dependencies
-        run: npm ci
-
-      - name: Run tests against live SecureTaskOps
-        env:
-          QA_BASE_URL: https://securetaskops-workflow-platform.vercel.app
-        run: npm run test:securetaskops
-
-      - name: Upload live Playwright report
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: playwright-report-live-target
-          path: playwright-report/
-
-  portfolio-product-contracts:
-    name: Portfolio and live-product contracts
-    runs-on: ubuntu-latest
-    timeout-minutes: 8
-    steps:
-      - name: Checkout QA repo
-        uses: actions/checkout@v4
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 22
           cache: npm
@@ -105,12 +32,113 @@ jobs:
       - name: Install QA dependencies
         run: npm ci
 
-      - name: Verify portfolio, SEO, CV, case studies, and product boundaries
-        run: npm run test:portfolio
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
 
-      - name: Upload contract-test report
-        uses: actions/upload-artifact@v4
-        if: always()
+      - name: Checkout SecureTaskOps target
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
-          name: playwright-report-product-contracts
-          path: playwright-report/
+          repository: Assembler-Fourier/securetaskops-workflow-platform
+          path: target-app
+
+      - name: Install target dependencies
+        working-directory: target-app
+        run: npm install --ignore-scripts --no-audit
+
+      - name: Start target application
+        working-directory: target-app
+        run: |
+          npm start > ../target-app.log 2>&1 &
+          echo $! > ../target-app.pid
+
+      - name: Wait for target health
+        run: npx wait-on --timeout 30000 http-get://127.0.0.1:3000/api/health
+
+      - name: Run writable local API and mocked UI suites
+        env:
+          QA_BASE_URL: http://127.0.0.1:3000
+          QA_ALLOW_WRITES: "1"
+        run: npm run test:securetaskops
+
+      - name: Show target logs after a failure
+        if: failure()
+        run: cat target-app.log || true
+
+      - name: Upload Playwright evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: playwright-local-target-${{ github.run_attempt }}
+          path: |
+            playwright-report/
+            test-results/
+            target-app.log
+          if-no-files-found: ignore
+          retention-days: 14
+
+  live-api-smoke:
+    name: Live SecureTaskOps read-only smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Checkout QA repository
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run read-only contracts against the live deployment
+        env:
+          QA_BASE_URL: https://securetaskops-workflow-platform.vercel.app
+        run: npm run test:securetaskops:read
+
+      - name: Upload Playwright evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: playwright-live-api-${{ github.run_attempt }}
+          path: |
+            playwright-report/
+            test-results/
+          if-no-files-found: ignore
+          retention-days: 14
+
+  public-product-contracts:
+    name: Portfolio and flagship release contracts
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout QA repository
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Verify portfolio, CV, SEO, accessibility and product boundaries
+        run: npm test
+
+      - name: Upload Playwright evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: playwright-public-contracts-${{ github.run_attempt }}
+          path: |
+            playwright-report/
+            test-results/
+          if-no-files-found: ignore
+          retention-days: 14
